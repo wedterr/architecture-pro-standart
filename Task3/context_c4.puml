@@ -1,0 +1,31 @@
+@startuml context_diagram
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+title Сервисы банка
+
+Person(client, "Клиент", "Клиент банка")
+Person(back_office_staff, "Сотрудники бэк-офиса")
+Person(call_center_staff, "Операторы кол-центра")
+
+System(bank_services, "Сервисы банка", "Микросервисы для управления депозитами")
+System(site, "Сайт банка", "Сайт для клиентов")
+System(internet_bank, "Интернет-банк", "Интернет-банк для клиентов")
+System(abs, "АБС", "Автоматизированная банковская система")
+System(call_center_system, "Система кол-центра", "CRM система для обработки заявок")
+System(sms_gateway, "СМС-шлюз", "Сервис отправки СМС сообщений")
+
+System_Ext(sms_operator, "Телеком оператор", "Оператор для отправки сообщений")
+
+Rel(client, site, "Смотрит депозиты, подает заявки")
+Rel(client, internet_bank, "Авторизация, управление депозитами")
+Rel(call_center_staff, call_center_system, "Обработка заявок клиентов")
+Rel(back_office_staff, abs, "Обработка заявок на депзит")
+Rel(site, bank_services, "Заявки на депозит")
+Rel(internet_bank, bank_services, "Операции с депозитами")
+Rel(bank_services, call_center_system, "Сообщения о заявках")
+Rel(bank_services, abs, "Заявки на обработку")
+Rel(bank_services, sms_gateway, "СМС сообщения")
+Rel(sms_gateway, sms_operator, "СМС сообщения")
+Rel(sms_operator, client, "СМС сообщения")
+
+@enduml

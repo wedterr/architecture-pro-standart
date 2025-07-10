@@ -1,0 +1,24 @@
+@startuml context_diagram
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+title  Диаграмма контейнеров передачи ставок в кол-центр
+
+Person(back_office_staff, "Менеджер бэк-офиса")
+Person(call_center_staff, "Операторы кол-центра")
+Person(partner_call_center_staff, "Операторы партнерского кол-центра")
+
+System(bank_services, "Сервисы банка", "Микросервисы для управления депозитами")
+System(sftp, "SFTP server", "SFTP server для обмена ставками")
+System(call_center_system, "Система кол-центра", "CRM система для обработки заявок")
+
+System_Ext(partner_call_center_system, "Партнерский кол-центр", "Партнерский центр обработки заявок")
+
+Rel(back_office_staff, bank_services, "Обновляет ставки")
+Rel(bank_services, call_center_system, "Считывает ставки применяет изменения")
+Rel(call_center_staff, call_center_system, "Используют ставки")
+Rel(bank_services, sftp, "Загружает файл на SFTP-сервер")
+Rel(partner_call_center_system, sftp, "Забирает ставки")
+Rel(partner_call_center_staff, partner_call_center_system, "Используют ставки")
+
+
+@enduml

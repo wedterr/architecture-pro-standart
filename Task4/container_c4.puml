@@ -1,0 +1,35 @@
+@startuml container_diagram
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Передача ставок в кол-центр
+
+Person(back_office_staff, "Менеджер бэк-офиса")
+Person(call_center_staff, "Операторы кол-центра")
+Person(partner_call_center_staff, "Операторы партнерского кол-центра")
+
+System_Boundary(bank_services_boundary, "Сервисы банка") {
+    Container(api_gateway, "API Gateway", "ASP.NET Core", "Aвторизация, маршрутизация")
+    Container(rate_service, "Rate Management Service", "Java Spring Boot", "Управление ставками депозитов, персонализация")
+    Container(kafka, "Message Broker", "Apache Kafka", "Передача событий между сервисами")
+    ContainerDb(rate_db, "Rate Database", "MS SQL Server", "Хранение ставок депозитов, правила расчета")
+}
+
+System(call_center_system, "Система кол-центра", "CRM система для обработки заявок")
+System(sftp, "SFTP server", "SFTP server для обмена ставками")
+System(call_center_system, "Система кол-центра", "CRM система для обработки заявок")
+
+System_Ext(partner_call_center_system, "Партнерский кол-центр", "Партнерский центр обработки заявок")
+
+Rel(api_gateway, rate_service, "Маршрутизация запросов на ставки", "HTTP/JSON")
+Rel(rate_service, rate_db, "Управление ставками", "SQL/TCP")
+Rel(back_office_staff, api_gateway, "Обновляет ставки")
+Rel(rate_service, kafka, "Отправляет сообщение с изменениями")
+Rel(call_center_system, kafka, "Считывает ставки применяет изменения")
+Rel(call_center_staff, call_center_system, "Используют ставки")
+
+Rel(rate_service, sftp, "Загружает файл ставок на SFTP-сервер")
+Rel(partner_call_center_system, sftp, "Забирает ставки")
+Rel(partner_call_center_staff, partner_call_center_system, "Используют ставки")
+
+
+@enduml
