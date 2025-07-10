@@ -1,0 +1,41 @@
+@startuml credit_context_diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title Сервисы банка для кредитования
+
+Person(client, "Клиенты")
+Person(credit_staff, "Кредитные специалисты")
+Person(call_center_staff, "Операторы кол-центра")
+
+System(bank_services, "Сервисы банка", "Платформа для кредитных заявок")
+System(internet_bank, "Интернет-банк", "Интернет-банк для клиентов")
+System(site, "Сайт банка", "Сайт для клиентов")
+System(abs, "АБС", "Автоматизированная банковская система")
+System(credit_conveyor, "Кредитный конвейер", "Существующая система обработки кредитных заявок")
+System(scoring_system, "Система скоринга", "ML-система оценки кредитоспособности")
+System(bki_system, "Бюро кредитных историй", "Система проверки кредитных историй")
+System(call_center_system, "Система кол-центра", "CRM система для обработки заявок")
+System(sms_gateway, "СМС-шлюз", "Сервис отправки СМС сообщений")
+
+System_Ext(sms_operator, "Телеком оператор", "Оператор для отправки сообщений")
+
+Rel(client, internet_bank, "Подает заявки на кредит")
+Rel(client, site, "Заполняет кредитную анкету с паспортными данными")
+Rel(credit_staff, credit_conveyor, "Обрабатывает кредитные заявки")
+Rel(call_center_staff, call_center_system, "Консультирует клиентов по кредитам")
+Rel(internet_bank, bank_services, "Запрос предодобренных кредитов")
+Rel(site, bank_services, "Отправка кредитных заявок")
+Rel(bank_services, credit_conveyor, "Передача заявок на обработку")
+Rel(bank_services, scoring_system, "Скоринговые оценки для предодобрений")
+Rel(bank_services, bki_system, "Проверка истории кредитов")
+Rel(bank_services, abs, "Синхронизация данных по кредитам")
+Rel(bank_services, call_center_system, "Уведомления о заявках")
+Rel(bank_services, sms_gateway, "СМС-уведомления о решениях")
+Rel(credit_conveyor, bank_services, "Результаты обработки заявок")
+Rel(scoring_system, bank_services, "Скоринговые оценки и предодобрения")
+Rel(call_center_staff, client, "Консультации по кредитным продуктам")
+Rel(call_center_staff, client, "Уточнение данных по заявкам")
+Rel(sms_gateway, sms_operator, "Уведомления")
+Rel(sms_operator, client, "СМС уведомления")
+
+@enduml

@@ -1,0 +1,56 @@
+@startuml credit_container_diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Диаграмма контейнеров сервисов банка для кредитования
+
+Person(client, "Клиенты")
+Person(credit_staff, "Кредитные специалисты")
+Person(call_center_staff, "Операторы кол-центра")
+
+System_Boundary(bank_services_boundary, "Сервисы банка") {
+    Container(site, "Сайт банка", "React.js, HTML5", "Сайт для клиентов")
+    Container(internet_bank, "Интернет-банк", "ASP.NET MVC", "Интернет-банк для клиентов")
+    Container(api_gateway, "API Gateway", "ASP.NET Core", "Aвторизация, маршрутизация")
+    Container(credit_service, "Credit Service", "Java Spring Boot", "Управление кредитными заявками")
+    Container(pre_approval_service, "Pre-approval Service", "Java Spring Boot", "Расчет предодобренных кредитов")
+    Container(notification_service, "Notification Service", "ASP.NET Core", "СМС и email уведомления клиентов")
+    ContainerDb(credit_db, "Credit Database", "MS SQL Server", "Хранение данных по кредитам")
+    Container(kafka, "Message Broker", "Apache Kafka", "Передача событий между сервисами")
+}
+
+System(credit_conveyor, "Кредитный конвейер", "Camunda BPM")
+System(scoring_system, "Система скоринга", "ML-система оценки")
+System(bki_system, "БКИ", "Бюро кредитных историй")
+System(abs, "АБС", "Автоматизированная банковская система")
+System(call_center, "Система кол-центра", "CRM система")
+System(sms_gateway, "СМС-шлюз", "Сервис отправки СМС сообщений")
+
+System_Ext(sms_operator, "Телеком оператор", "Оператор для отправки сообщений")
+
+Rel(client, internet_bank, "Авторизация, навигация", "HTTPS")
+Rel(client, site, "Просмотр кредитных продуктов", "HTTPS")
+Rel(internet_bank, api_gateway, "Запросы предодобренных предложений", "HTTPS/JSON")
+Rel(site, api_gateway, "Отправка кредитных заявок", "HTTPS/JSON")
+Rel(api_gateway, pre_approval_service, "Получение предодобренных предложений", "HTTP/JSON")
+Rel(api_gateway, credit_service, "Создание и управление заявками", "HTTP/JSON")
+Rel(api_gateway, credit_service, "Проверка в БКИ для новых клиентов", "HTTP/JSON")
+Rel(api_gateway, notification_service, "Запросы уведомлений", "HTTP/JSON")
+Rel(pre_approval_service, credit_db, "Чтение данных клиента", "SQL/TCP")
+Rel(credit_service, credit_db, "Сохранение данных и результатов БКИ", "SQL/TCP")
+Rel(credit_service, kafka, "Поданные заявки", "TCP")
+Rel(credit_service, kafka, "Проверка БКИ", "TCP")
+Rel(notification_service, kafka, "Изменения по кредитам", "TCP")
+Rel(credit_service, bki_system, "REST API проверки кредитной истории", "HTTPS/JSON")
+Rel(credit_service, credit_conveyor, "Передача заявок в Camunda", "HTTPS/JSON")
+Rel(pre_approval_service, scoring_system, "Запросы скоринговой оценки", "HTTPS/JSON")
+Rel(notification_service, call_center, "Уведомления о новых заявках", "HTTPS/JSON")
+Rel(notification_service, sms_gateway, "СМС-уведомления клиентам")
+Rel(sms_gateway, sms_operator, "Уведомление")
+Rel(sms_operator, client, "СМС уведомление")
+Rel(credit_conveyor, credit_service, "Результаты обработки заявок", "REST API + Kafka")
+Rel(scoring_system, pre_approval_service, "Скоринговые оценки и лимиты", "HTTPS/JSON")
+Rel(credit_service, abs, "Синхронизация кредитных данных")
+Rel(credit_staff, credit_conveyor, "Ручная обработка заявок")
+Rel(call_center_staff, call_center, "Консультации по кредитам")
+
+@enduml

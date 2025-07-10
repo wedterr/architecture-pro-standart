@@ -1,0 +1,48 @@
+@startuml container_diagram
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Диаграмма контейнеров системы депозитов
+
+Person(client, "Клиент", "Клиент банка")
+Person(back_office_staff, "Сотрудники бэк-офиса")
+Person(call_center_staff, "Операторы кол-центра")
+
+System_Boundary(bank_services_boundary, "Сервисы банка") {
+    Container(site, "Сайт банка", "React.js, HTML5", "Сайт для клиентов")
+    Container(internet_bank, "Интернет-банк", "ASP.NET MVC", "Интернет-банк для клиентов")
+    Container(api_gateway, "API Gateway", "ASP.NET Core", "Aвторизация, маршрутизация")
+    Container(deposit_service, "Deposit Service", "ASP.NET Core", "Управление депозитными заявками, бизнес-логика депозитов")
+    Container(rate_service, "Rate Management Service", "Java Spring Boot", "Управление ставками депозитов, персонализация")
+    Container(notification_service, "Notification Service", "ASP.NET Core", "СМС и email уведомления клиентов")
+    Container(integration_service, "Integration Service", "Java Spring Boot", "Интеграция с АБС, адаптер legacy систем")
+    Container(kafka, "Message Broker", "Apache Kafka", "Передача событий между сервисами")
+    ContainerDb(deposit_db, "Deposit Database", "MS SQL Server", "Хранение заявок на депозиты, статусы обработки")
+    ContainerDb(rate_db, "Rate Database", "MS SQL Server", "Хранение ставок депозитов, правила расчета")
+}
+
+System(call_center_system, "Система кол-центра", "CRM система для обработки заявок")
+System(sms_gateway, "СМС-шлюз", "Сервис отправки СМС сообщений")
+System(abs, "АБС", "Автоматизированная банковская система")
+System_Ext(sms_operator, "Телеком оператор", "Оператор для отправки сообщений")
+
+Rel(client, site, "Просмотр депозитов, подача заявок", "HTTPS")
+Rel(client, internet_bank, "Авторизация, управление депозитами", "HTTPS")
+Rel(site, api_gateway, "REST API вызовы", "HTTPS/JSON")
+Rel(internet_bank, api_gateway, "REST API вызовы", "HTTPS/JSON")
+Rel(api_gateway, deposit_service, "Маршрутизация запросов на депозиты", "HTTP/JSON")
+Rel(api_gateway, rate_service, "Маршрутизация запросов на ставки", "HTTP/JSON")
+Rel(api_gateway, notification_service, "Маршрутизация уведомлений", "HTTP/JSON")
+Rel(deposit_service, deposit_db, "Сохранение/чтение заявок", "SQL/TCP")
+Rel(rate_service, rate_db, "Управление ставками", "SQL/TCP")
+Rel(deposit_service, kafka, "Публикация событий заявок", "TCP")
+Rel(integration_service, kafka, "Подписка на события", "TCP")
+Rel(notification_service, kafka, "События уведомлений", "TCP")
+Rel(integration_service, abs, "Batch интеграция заявок", "File Transfer/раз в день")
+Rel(notification_service, call_center_system, "Уведомления о заявках", "REST API")
+Rel(notification_service, sms_gateway, "Отправка СМС", "REST API")
+Rel(sms_gateway, sms_operator, "Отправка СМС")
+Rel(sms_operator, client, "Отправка СМС")
+Rel(call_center_staff, call_center_system, "Обработка обращений")
+Rel(back_office_staff, abs, "Обработка депозитных заявок")
+
+@enduml
